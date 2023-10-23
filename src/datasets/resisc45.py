@@ -267,8 +267,7 @@ class RESISC45Dataset(VisionClassificationDataset):
         with open(os.path.join(self.root, "resisc45", f"resisc45-{split}.txt")) as f:
             for fn in f:
                 valid_fns.add(fn.strip())
-        is_in_split: Callable[[str], bool] = lambda x: os.path.basename(
-            x) in valid_fns
+        is_in_split: Callable[[str], bool] = lambda x: os.path.basename(x) in valid_fns
 
         super().__init__(
             root=os.path.join(root, self.directory),
@@ -277,15 +276,24 @@ class RESISC45Dataset(VisionClassificationDataset):
         )
 
 
+import torchvision.datasets as datasets
+
 
 class RESISC45:
-    def __init__(self,
-                 preprocess,
-                 location=os.path.expanduser('~/data'),
-                 batch_size=32,
-                 num_workers=16):
+    def __init__(
+        self,
+        preprocess,
+        location=os.path.expanduser("~/data"),
+        batch_size=32,
+        num_workers=16,
+    ):
+        traindir = os.path.join(location, "resisc45", "train")
+        valdir = os.path.join(location, "resisc45", "val")
+        self.train_dataset = datasets.ImageFolder(traindir, transform=preprocess)
 
-        self.train_dataset = RESISC45Dataset(root=location, split='train', transforms=preprocess)
+        # self.train_dataset = RESISC45Dataset(
+        #     root=location, split="train", transforms=preprocess
+        # )
         self.train_loader = torch.utils.data.DataLoader(
             self.train_dataset,
             shuffle=True,
@@ -293,12 +301,13 @@ class RESISC45:
             num_workers=num_workers,
         )
 
-        self.test_dataset = RESISC45Dataset(root=location, split='test', transforms=preprocess)
+        self.test_dataset = datasets.ImageFolder(valdir, transform=preprocess)
         self.test_loader = torch.utils.data.DataLoader(
-            self.test_dataset,
-            batch_size=batch_size,
-            num_workers=num_workers
+            self.test_dataset, batch_size=batch_size, num_workers=num_workers
         )
 
+        # self.test_dataset = RESISC45Dataset(
+        #     root=location, split="test", transforms=preprocess
+        # )
         # class names have _ so split on this for better zero-shot head
-        self.classnames = [' '.join(c.split('_')) for c in RESISC45Dataset.classes]
+        self.classnames = [" ".join(c.split("_")) for c in RESISC45Dataset.classes]
